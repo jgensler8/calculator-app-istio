@@ -1,0 +1,14 @@
+{{- $root := . -}}
+---
+type: route-rule
+name: {{ $root.serviceName }}-{{ $root.teamName }}-default
+# namespace: {{ $root.teamName }}
+spec:
+  # destination: {{ $root.serviceName }}.{{ $root.teamName }}.svc.cluster.local
+  destination: {{ $root.serviceName }}.default.svc.cluster.local
+  # destination: {{ $root.serviceName }}
+  precedence: 1
+  route:
+  - tags:
+      version: "{{ $root.version }}"
+    weight: 100

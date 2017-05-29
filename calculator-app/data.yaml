@@ -1,0 +1,12 @@
+---
+replicas: "1"
+logLevel: 6
+environment: "PREPROD"
+teamName: "team-multiplication-operator"
+serviceName: "multiplication-operator-build-123"
+imageRepo: "jgensl2"
+imageService: "multiplication-operator"
+imageTag: "v0.1.1"
+# portName: "my-http"
+portName: "http"
+version: "v1"

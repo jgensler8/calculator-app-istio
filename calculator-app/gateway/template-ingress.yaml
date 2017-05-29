@@ -1,0 +1,23 @@
+{{- $root := . -}}
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: "{{ $root.serviceName }}"
+  # namespace: "{{ $root.teamName }}"
+  annotations:
+    # kubernetes.io/ingress.class: "linkerd"
+    kubernetes.io/ingress.class: "istio"
+  labels:
+    app: "{{ $root.serviceName }}"
+    environment: "{{ $root.environment }}"
+    version: "{{ $root.version }}"
+spec:
+  rules:
+  - host: "{{ $root.serviceName }}"
+    http:
+      paths:
+      - backend:
+          serviceName: "{{ $root.serviceName }}"
+          # servicePort: "{{ $root.portName }}"
+          servicePort: 8080

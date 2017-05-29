@@ -1,0 +1,24 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mydeployment
+  # namespace: applications
+  labels:
+    app: mydeployment
+    version: v1
+    linkerd-expose-external: "on"
+    # linkerd-expose-internal: "on"
+spec:
+  type: NodePort
+  ports:
+  -
+    # name: first-thing
+    # name: thing
+    name: http
+    targetPort: my-http
+    # port: 7777
+    port: 8080
+    # targetPort: 8080
+  selector:
+    app: mydeployment

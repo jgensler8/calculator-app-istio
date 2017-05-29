@@ -1,0 +1,125 @@
+{{- $root := . -}}
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  annotations:
+    alpha.istio.io/sidecar: injected
+    alpha.istio.io/version: jenkins@ubuntu-16-04-build-de3bbfab70500-0.1.5-21f4cb4
+    pod.beta.kubernetes.io/init-containers: '[{"args":["-p","15001","-u","1337"],"image":"docker.io/istio/init:0.1","imagePullPolicy":"Always","name":"init","securityContext":{"capabilities":{"add":["NET_ADMIN"]}}},{"args":["-c","sysctl -w kernel.core_pattern=/tmp/core.%e.%p.%t \u0026\u0026 ulimit -c unlimited"],"command":["/bin/sh"],"image":"alpine","imagePullPolicy":"Always","name":"enable-core-dump","securityContext":{"privileged":true}}]'
+  name: "{{ $root.serviceName }}"
+  # namespace: "{{ $root.teamName }}"
+  labels:
+    app: "{{ $root.serviceName }}"
+    environment: "{{ $root.environment }}"
+    version: "{{ $root.version }}"
+spec:
+  replicas: {{ $root.replicas }}
+  template:
+    metadata:
+      labels:
+        app: "{{ $root.serviceName }}"
+        environment: "{{ $root.environment }}"
+        version: "{{ $root.version }}"
+    spec:
+      containers:
+      - name: "{{ $root.serviceName }}"
+        image: "{{ $root.imageRepo }}/{{ $root.imageService }}:{{ $root.imageTag }}"
+        ports:
+        - name: "{{ $root.portName }}"
+          containerPort: 8080
+        command:
+        - /a.out
+        - -v={{ $root.logLevel }}
+        - -logtostderr
+        - -port=8080
+        env:
+        # separate namespaces
+        # - name: GATEWAY_TOKENIZERSERVICE
+        #   value: http://tokenizer.team-tokenizer:80/tokenize
+        # - name: GATEWAY_ADDITIONSERVICE
+        #   value: http://addition-operator.team-addition-operator:80/operate
+        # - name: GATEWAY_SUBTRACTIONSERVICE
+        #   value: http://subtraction-operator.team-subtraction-operator:80/operate
+        # - name: GATEWAY_MULTIPLICATIONSERVICE
+        #   value: http://multiplication-operator.team-multiplication-operator:80/operate
+        # - name: GATEWAY_DIVISIONSERVICE
+        #   value: http://division-operator.team-division-operator:80/operate
+
+        # when they are in default namespace
+        - name: GATEWAY_TOKENIZERSERVICE
+          value: http://tokenizer:8080/tokenize
+        - name: GATEWAY_ADDITIONSERVICE
+          value: http://addition-operator:8080/operate
+        - name: GATEWAY_SUBTRACTIONSERVICE
+          value: http://subtraction-operator:8080/operate
+        - name: GATEWAY_MULTIPLICATIONSERVICE
+          value: http://multiplication-operator:8080/operate
+        - name: GATEWAY_DIVISIONSERVICE
+          value: http://division-operator:8080/operate
+
+      - name: proxy
+        image: docker.io/istio/proxy_debug:0.1
+        args:
+        - proxy
+        - sidecar
+        - -v
+        - "2"
+        - --namespace
+        - default
+        env:
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: POD_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
+        imagePullPolicy: Always
+        resources: {}
+        securityContext:
+          runAsUser: 1337
+
+        # env:
+        # - name: HTTP_PROXY
+        #   valueFrom:
+        #     fieldRef:
+        #       fieldPath: spec.nodeName
+
+        # These variables are used when only linkerd is used to integrate
+        # - name: GATEWAY_TOKENIZERSERVICE
+        #   value: http://tokenizer/tokenize
+        # - name: GATEWAY_ADDITIONSERVICE
+        #   value: http://addition-operator/operate
+        # - name: GATEWAY_SUBTRACTIONSERVICE
+        #   value: http://subtraction-operator/operate
+        # - name: GATEWAY_MULTIPLICATIONSERVICE
+        #   value: http://multiplication-operator/operate
+        # - name: GATEWAY_DIVISIONSERVICE
+        #   value: http://division-operator/operate
+
+        # These variables are used with Part 3's NGINX Gateway example
+        # - name: GATEWAY_TOKENIZERSERVICE
+        #   value: http://api.calculator.com/api/tokenizer/tokenize
+        # - name: GATEWAY_ADDITIONSERVICE
+        #   value: http://api.calculator.com/api/addition-operator/operate
+        # - name: GATEWAY_SUBTRACTIONSERVICE
+        #   value: http://api.calculator.com/api/subtraction-operator/operate
+        # - name: GATEWAY_MULTIPLICATIONSERVICE
+        #   value: http://api.calculator.com/api/multiplication-operator/operate
+        # - name: GATEWAY_DIVISIONSERVICE
+        #   value: http://division-operator.calculator.com/operate
+
+        # These variables would be used if we weren't using linkerd and
+        # each service was in its own namespace
+        # - name: GATEWAY_TOKENIZERSERVICE
+        #   value: http://tokenizer.team-tokenizer:80/tokenize
+        # - name: GATEWAY_ADDITIONSERVICE
+        #   value: http://addition-operator.team-addition-operator:80/operate
+        # - name: GATEWAY_SUBTRACTIONSERVICE
+        #   value: http://subtraction-operator.team-subtraction-operator:80/operate
+        # - name: GATEWAY_MULTIPLICATIONSERVICE
+        #   value: http://multiplication-operator.team-multiplication-operator:80/operate
+        # - name: GATEWAY_DIVISIONSERVICE
+        #   value: http://division-operator.team-division-operator:80/operate

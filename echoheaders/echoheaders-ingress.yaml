@@ -1,0 +1,27 @@
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: mydeployment
+  # namespace: applications
+  labels:
+    app: mydeployment
+    version: v1
+    linkerd-expose-external: "on"
+  annotations:
+    # kubernetes.io/ingress.class: "linkerd"
+    kubernetes.io/ingress.class: "istio"
+spec:
+  rules:
+  - http:
+      paths:
+      - backend:
+          serviceName: mydeployment
+          # servicePort: first-thing
+          servicePort: 8080
+  # - host: "echoheaders.external"
+  #   http:
+  #     paths:
+  #     - backend:
+  #         serviceName: mydeployment
+  #         servicePort: first-thing

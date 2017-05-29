@@ -1,0 +1,8 @@
+type: route-rule
+name: deployment-default
+spec:
+  destination: mydeployment.default.svc.cluster.local
+  precedence: 1
+  route:
+  - tags:
+      version: v1

@@ -1,0 +1,34 @@
+{{- $root := . -}}
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: "{{ $root.serviceName }}"
+  # namespace: "{{ $root.teamName }}"
+  annotations:
+    # kubernetes.io/ingress.class: "linkerd"
+    kubernetes.io/ingress.class: "istio"
+  labels:
+    app: "{{ $root.serviceName }}"
+    environment: "{{ $root.environment }}"
+    version: "{{ $root.version }}"
+spec:
+  rules:
+  - host: "{{ $root.serviceName }}"
+    http:
+      paths:
+      - backend:
+          serviceName: "{{ $root.serviceName }}"
+          # servicePort: "{{ $root.portName }}"
+          servicePort: 8080
+  # The following config would be used without any rewrite in NGINX.
+  # If you use the following, you will end up with a 404 from Go rather than NGINX.
+  # We would have to use path to identify us but linkerd doesn't support rewrites *in Ingress objects*
+  # See: https://github.com/kubernetes/contrib/tree/d3b2b2d2b99abaf74712db9fce2dabf1344f29e5/ingress/controllers/nginx/examples/rewrite
+  # - host: "api.calculator.com"
+  #   http:
+  #     paths:
+  #     - path: "/api/{{ $root.serviceName }}/operate"
+  #       backend:
+  #         serviceName: "{{ $root.serviceName }}"
+  #         servicePort: "{{ $root.portName }}"

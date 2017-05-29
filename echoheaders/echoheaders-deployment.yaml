@@ -1,0 +1,24 @@
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: mydeployment
+  # namespace: applications
+  labels:
+    app: mydeployment
+    version: v1
+spec:
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: mydeployment
+        version: v1
+    spec:
+      containers:
+      - name: mydeployment
+        image: brndnmtthws/nginx-echo-headers:latest
+        ports:
+        - name: my-http
+          containerPort: 8080
+          # hostPort will be a high level port
